@@ -1,0 +1,66 @@
+@startuml
+' --- 時序圖 (整體程式) ---
+
+== 遊戲啟動階段 ==
+
+Player -> Game: 執行 main()
+activate Game
+
+Game -> Game: loadGameFromText()
+activate Game
+
+alt 存檔存在
+    Game -> SaveFile: 讀取存檔
+    SaveFile --> Game: 角色資料 (CSV格式)
+    Game -> CPlayer: new C_Player(name, level, hp, mp)
+    activate CPlayer
+    CPlayer -> CPlayer: 計算屬性
+    deactivate CPlayer
+    Game --> Game: 返回 C_Player 物件
+else 無存檔
+    Game --> Game: 返回 null
+    Game -> Player: 顯示「請輸入姓名」
+    Player -> Game: 輸入名稱
+    Game -> CPlayer: new C_Player(name)
+    activate CPlayer
+    CPlayer -> CPlayer: 初始化預設屬性
+    deactivate CPlayer
+end
+deactivate Game
+
+== 主遊戲迴圈 ==
+
+loop 遊戲進行中
+    Game -> Player: 顯示選單 (1.戰鬥 2.休息 3.狀態 4.離開)
+    Player -> Game: 選擇選項
+
+    alt 1. 選擇戰鬥
+        Game -> Game: battle()
+        note right: 參考「戰鬥流程」時序圖
+
+    else 2. 選擇休息
+        Game -> CPlayer: recover()
+        activate CPlayer
+        CPlayer -> CPlayer: 恢復滿血滿真氣
+        deactivate CPlayer
+
+    else 3. 選擇狀態
+        Game -> CPlayer: 獲取各項數值 (HP/MP/ATK)
+        CPlayer --> Game: 回傳資料
+        Game -> Player: 顯示角色狀態視窗
+
+    else 4. 選擇離開
+        Game -> Game: saveGameAsText(s_player)
+        activate Game
+        Game -> CPlayer: 讀取當前屬性
+        CPlayer --> Game: 名稱/等級/HP/MP
+        Game -> SaveFile: 寫入 CSV 格式資料
+        SaveFile --> Game: 存檔完成
+        deactivate Game
+        Game -> Player: 顯示「存檔完成，再見！」
+        Game -> Game: 結束遊戲 (break)
+    end
+end
+
+deactivate Game
+@enduml

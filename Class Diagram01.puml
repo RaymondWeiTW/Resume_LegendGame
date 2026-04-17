@@ -1,0 +1,68 @@
+
+@startuml
+' --- 類別圖 (整體程式) ---
+
+abstract class A_GameCharacter {
+  # String m_name
+  # int m_level
+  # int m_maxHp, m_currentHp
+  # int m_maxMp, m_currentMp
+  # int m_attackPower, m_defense
+  --
+  + A_GameCharacter(name, lvl, hp, mp, atk, def)
+  + boolean isAlive()
+  + void takeDamage(dmg)
+  + void consumeMp(amount)
+  + void recover()
+  + getters()...
+}
+
+class C_Player {
+  - int m_exp
+  - int m_nextLevelExp
+  + {static} Object[][] s_SKILL_DATA
+  --
+  + C_Player(name)
+  + C_Player(name, level, hp, mp)
+  + void gainExp(amount)
+  - void levelUp()
+  + boolean hasMasteredSwordGod()
+  + void attack(A_GameCharacter target)
+  + void castSkill(skillIndex, A_GameCharacter target)
+}
+
+class C_Monster {
+  - int m_expReward
+  --
+  + C_Monster(name, lvl, hp, mp, atk, def, exp)
+  + void attack(A_GameCharacter target)
+  + int getExpReward()
+}
+
+class C_MonsterFactory {
+  --
+  + {static} C_Monster spawnRandomMonster()
+}
+
+class LegendGame {
+  - {static} C_Player s_player
+  - {static} String SAVE_FILE
+  - {static} BufferedReader s_reader
+  --
+  + {static} void main(String[] args)
+  - {static} void battle()
+  - {static} void saveGameAsText(C_Player player)
+  - {static} C_Player loadGameFromText()
+}
+
+' 關係定義
+A_GameCharacter <|-- C_Player
+A_GameCharacter <|-- C_Monster
+LegendGame ..> C_Player : uses
+LegendGame ..> C_Monster : uses
+LegendGame ..> C_MonsterFactory : uses
+C_MonsterFactory ..> C_Monster : creates
+C_Player ..> A_GameCharacter : attacks
+C_Monster ..> A_GameCharacter : attacks
+
+@enduml

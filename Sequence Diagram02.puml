@@ -1,0 +1,49 @@
+@startuml
+' --- 時序圖 (針對戰鬥流程) ---
+
+== 開始戰鬥 ==
+Player -> LegendGame: 選擇戰鬥
+LegendGame -> C_MonsterFactory: spawnRandomMonster()
+C_MonsterFactory -> C_Monster: new
+C_MonsterFactory --> LegendGame: monster
+LegendGame -> C_Monster: getName()
+
+== 戰鬥迴圈 ==
+loop 雙方皆存活
+    LegendGame -> C_Player: getCurrentHp()
+    LegendGame -> C_Monster: getCurrentHp()
+    
+    Player -> LegendGame: 選擇 [1]普攻 [2]仙術 [3]逃跑
+
+    alt 1. 普攻
+        LegendGame -> C_Player: attack(monster)
+        activate C_Player
+        C_Player -> C_Monster: takeDamage(dmg)
+        deactivate C_Player
+    else 2. 仙術
+        LegendGame -> C_Player: castSkill(index, monster)
+        activate C_Player
+        alt MP足夠
+            C_Player -> C_Monster: takeDamage(skillDmg)
+        end
+        deactivate C_Player
+    else 3. 逃跑
+        Player -> LegendGame: 逃跑
+        break
+    end
+
+    == 怪物回合 ==
+    LegendGame -> C_Monster: isAlive()
+    alt 怪物存活
+        LegendGame -> C_Monster: attack(player)
+        C_Monster -> C_Player: takeDamage(dmg)
+    end
+end
+
+== 結算 ==
+alt 勝利
+    LegendGame -> C_Player: gainExp(exp)
+else 失敗
+    LegendGame -> C_Player: recover()
+end
+@enduml
